@@ -40,6 +40,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $registrationDate = null;
 
+    public function __construct()
+    {
+        $this->registrationDate = new \DateTimeImmutable();
+    }
+
     public function getId(): ?int
     {
         return $this->id;

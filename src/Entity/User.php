@@ -3,48 +3,51 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, unique: true)]
-    private ?string $username = null;
-
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $password_hash = null;
+    /**
+     * @var list<string> The user roles
+     */
+    #[ORM\Column]
+    private array $roles = [];
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $registration_date = null;
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $role = null;
+    private ?string $username = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $registrationDate = null;
+
+    public function __construct()
+    {
+        $this->registrationDate = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(string $username): static
-    {
-        $this->username = $username;
-
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -59,38 +62,90 @@ class User
         return $this;
     }
 
-    public function getPasswordHash(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
     {
-        return $this->password_hash;
+        return (string) $this->email;
     }
 
-    public function setPasswordHash(string $password_hash): static
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        $this->password_hash = $password_hash;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
 
         return $this;
     }
 
-    public function getRegistrationDate(): ?\DateTime
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): ?string
     {
-        return $this->registration_date;
+        return $this->password;
     }
 
-    public function setRegistrationDate(\DateTime $registration_date): static
+    public function setPassword(string $password): static
     {
-        $this->registration_date = $registration_date;
+        $this->password = $password;
 
         return $this;
     }
 
-    public function getRole(): ?string
+    /**
+     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
+     */
+    public function __serialize(): array
     {
-        return $this->role;
+        $data = (array) $this;
+        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+
+        return $data;
     }
 
-    public function setRole(string $role): static
+    #[\Deprecated]
+    public function eraseCredentials(): void
     {
-        $this->role = $role;
+        // @deprecated, to be removed when upgrading to Symfony 8
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    public function getRegistrationDate(): ?\DateTimeImmutable
+    {
+        return $this->registrationDate;
+    }
+
+    public function setRegistrationDate(\DateTimeImmutable $registrationDate): static
+    {
+        $this->registrationDate = $registrationDate;
 
         return $this;
     }

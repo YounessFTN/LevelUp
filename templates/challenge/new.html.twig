@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Proposer un défi{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4">Proposer un Nouveau Défi</h1>
+
+            <div class="card">
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        {{ form_row(form.title) }}
+                        {{ form_row(form.description) }}
+
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                ℹ️ Votre défi sera soumis à modération avant d'être publié.
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Proposer ce défi
+                        </button>
+                        <a href="{{ path('app_home') }}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\FeedbackRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FeedbackRepository::class)]
 #[ORM\Table(name: 'feedback')]
@@ -19,7 +20,12 @@ class Feedback
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: false)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
+    #[Assert\Length(
+        min: 10,
+        minMessage: 'Votre retour doit contenir au moins {{ limit }} caractères'
+    )]
     private ?string $content = null;
 
     #[ORM\Column(nullable: true)]

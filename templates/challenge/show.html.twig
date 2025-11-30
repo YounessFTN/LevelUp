@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ challenge.title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            {# Détail du défi #}
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h1 class="card-title text-primary">{{ challenge.title }}</h1>
+                    <p class="card-text mt-3">{{ challenge.description }}</p>
+                    <p class="text-muted">
+                        <small>
+                            Proposé par {{ challenge.author.email }} 
+                            le {{ challenge.createdAt|date('d/m/Y') }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+
+            {# Formulaire d'ajout de feedback (uniquement si connecté) #}
+            {% if app.user %}
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Partagez votre retour</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                            {{ form_row(form.content) }}
+                            <button type="submit" class="btn btn-success">
+                                Partager mon retour
+                            </button>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <a href="{{ path('app_login') }}">Connectez-vous</a> pour partager votre retour !
+                </div>
+            {% endif %}
+
+            {# Liste des feedbacks #}
+            <h3 class="mb-3">Retours partagés ({{ feedbacks|length }})</h3>
+            
+            {% if feedbacks is empty %}
+                <div class="alert alert-secondary">
+                    Aucun retour partagé pour le moment. Soyez le premier !
+                </div>
+            {% else %}
+                {% for feedback in feedbacks %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="card-text">{{ feedback.content }}</p>
+                            <p class="text-muted mb-0">
+                                <small>
+                                    Par {{ feedback.author.email }} 
+                                    le {{ feedback.createdAt|date('d/m/Y à H:i') }}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {# Sidebar #}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Actions</h5>
+                    <a href="{{ path('app_home') }}" class="btn btn-secondary w-100 mb-2">
+                        Retour à l'accueil
+                    </a>
+                    {% if app.user %}
+                        <a href="{{ path('app_challenge_new') }}" class="btn btn-primary w-100">
+                            Proposer un défi
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

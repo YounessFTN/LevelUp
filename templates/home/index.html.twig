@@ -14,10 +14,49 @@
                         <h2 class="card-title text-primary">{{ challenge.title }}</h2>
                         <p class="card-text mt-3">{{ challenge.description }}</p>
                     </div>
-                    <div class="card-footer text-muted text-center">
-                        Rafraîchissez la page pour un nouveau défi !
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Rafraîchissez la page pour un nouveau défi !
+                            </small>
+                            <div>
+                                {# ✅ Bouton pour voir les détails et partager son expérience #}
+                                <a href="{{ path('app_challenge_show', {id: challenge.id}) }}" class="btn btn-primary">
+                                    {% if app.user %}
+                                        💬 J'ai fait ce défi !
+                                    {% else %}
+                                        👁️ Voir les retours
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {# ✅ Afficher un aperçu des feedbacks récents #}
+                {% if challenge.feedbacks|length > 0 %}
+                    <div class="mt-4">
+                        <h5>Derniers retours d'expérience ({{ challenge.feedbacks|length }})</h5>
+                        <div class="list-group">
+                            {% for feedback in challenge.feedbacks|slice(0, 3) %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small class="text-muted">{{ feedback.author.username }}</small>
+                                        <small class="text-muted">{{ feedback.createdAt|date('d/m/Y') }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ feedback.content|length > 150 ? feedback.content|slice(0, 150) ~ '...' : feedback.content }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if challenge.feedbacks|length > 3 %}
+                            <div class="text-center mt-2">
+                                <a href="{{ path('app_challenge_show', {id: challenge.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    Voir tous les {{ challenge.feedbacks|length }} retours →
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="alert alert-info text-center" role="alert">
                     <h4 class="alert-heading">Aucun défi pour le moment</h4>

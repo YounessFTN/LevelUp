@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Challenge;
 use App\Entity\User;
+use App\Repository\ChallengeRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,13 +18,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminController extends AbstractController
 {
     #[Route('', name: 'app_admin_dashboard')]
-    public function dashboard(UserRepository $userRepository, EntityManagerInterface $em): Response
-    {
+    public function dashboard(
+        UserRepository $userRepository,
+        ChallengeRepository $challengeRepository,
+        EntityManagerInterface $em
+    ): Response {
         $totalUsers = $userRepository->count([]);
         
         // Utiliser une requête SQL native avec les bons noms de table/colonne
         $conn = $em->getConnection();
-        // Utilisez "user" avec guillemets pour PostgreSQL ou essayez le nom exact de votre table
         $sql = 'SELECT COUNT(*) FROM "user" WHERE roles::text LIKE :role';
         try {
             $adminUsers = $conn->executeQuery($sql, ['role' => '%"ROLE_ADMIN"%'])->fetchOne();
@@ -33,14 +37,24 @@ class AdminController extends AbstractController
         }
         
         $recentUsers = $userRepository->findBy([], ['registrationDate' => 'DESC'], 5);
+        
+        // ✅ Statistiques des défis
+        $totalChallenges = $challengeRepository->count([]);
+        $pendingChallenges = $challengeRepository->count(['publicationStatus' => 'en_attente']);
+        $publishedChallenges = $challengeRepository->count(['publicationStatus' => 'publié']);
 
         return $this->render('admin/dashboard.html.twig', [
             'total_users' => $totalUsers,
             'admin_users' => $adminUsers,
             'recent_users' => $recentUsers,
+            'total_challenges' => $totalChallenges,
+            'pending_challenges' => $pendingChallenges,
+            'published_challenges' => $publishedChallenges,
         ]);
     }
 
+    // ========== GESTION DES UTILISATEURS (code existant) ==========
+    
     #[Route('/users', name: 'app_admin_users')]
     public function listUsers(UserRepository $userRepository): Response
     {
@@ -91,5 +105,72 @@ class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_users');
+    }
+
+    // ========== GESTION DES DÉFIS (nouveau) ==========
+    
+    #[Route('/challenges', name: 'app_admin_challenges')]
+    public function listChallenges(ChallengeRepository $challengeRepository): Response
+    {
+        // Récupère uniquement les défis en attente de validation
+        $pendingChallenges = $challengeRepository->findBy(
+            ['publicationStatus' => 'en_attente'],
+            ['creationDate' => 'DESC']
+        );
+
+        return $this->render('admin/challenges.html.twig', [
+            'challenges' => $pendingChallenges,
+        ]);
+    }
+
+    #[Route('/challenges/{id}/publish', name: 'app_admin_challenge_publish', methods: ['POST'])]
+    public function publishChallenge(Challenge $challenge, EntityManagerInterface $em): Response
+    {
+        // Change le statut à "publié"
+        $challenge->setPublicationStatus('publié');
+        $em->flush();
+
+        $this->addFlash('success', "Le défi \"{$challenge->getTitle()}\" a été publié.");
+
+        return $this->redirectToRoute('app_admin_challenges');
+    }
+
+    #[Route('/challenges/{id}/delete', name: 'app_admin_challenge_delete', methods: ['POST'])]
+    public function deleteChallenge(Challenge $challenge, EntityManagerInterface $em, Request $request): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$challenge->getId(), $request->request->get('_token'))) {
+            $title = $challenge->getTitle();
+            $em->remove($challenge);
+            $em->flush();
+
+            $this->addFlash('success', "Le défi \"{$title}\" a été supprimé.");
+        }
+
+        return $this->redirectToRoute('app_admin_challenges');
+    }
+    #[Route('/challenges/all', name: 'app_admin_challenges_all')]
+    public function listAllChallenges(ChallengeRepository $challengeRepository): Response
+    {
+        // Récupère TOUS les défis, triés par date (les plus récents en premier)
+        $allChallenges = $challengeRepository->findBy(
+            [],
+            ['creationDate' => 'DESC']
+        );
+
+        return $this->render('admin/challenges_all.html.twig', [
+            'challenges' => $allChallenges,
+        ]);
+    }
+
+    #[Route('/challenges/{id}/unpublish', name: 'app_admin_challenge_unpublish', methods: ['POST'])]
+    public function unpublishChallenge(Challenge $challenge, EntityManagerInterface $em): Response
+    {
+        // Repasse le défi en "en_attente"
+        $challenge->setPublicationStatus('en_attente');
+        $em->flush();
+
+        $this->addFlash('success', "Le défi \"{$challenge->getTitle()}\" a été dépublié.");
+
+        return $this->redirectToRoute('app_admin_challenges_all');
     }
 }

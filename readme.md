@@ -72,6 +72,14 @@ Résultat attendu :
 | 3  | Frédéric   | frederic@gmail.com                | ["ROLE_USER"]    |
 ```
 
+### 8️⃣ Générer des défis
+
+```bash
+docker compose exec php bin/console doctrine:fixtures:load
+```
+
+Répondre yes.
+
 ---
 
 ## 🌐 Accès à l'application

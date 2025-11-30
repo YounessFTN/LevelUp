@@ -148,4 +148,29 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_challenges');
     }
+    #[Route('/challenges/all', name: 'app_admin_challenges_all')]
+    public function listAllChallenges(ChallengeRepository $challengeRepository): Response
+    {
+        // Récupère TOUS les défis, triés par date (les plus récents en premier)
+        $allChallenges = $challengeRepository->findBy(
+            [],
+            ['creationDate' => 'DESC']
+        );
+
+        return $this->render('admin/challenges_all.html.twig', [
+            'challenges' => $allChallenges,
+        ]);
+    }
+
+    #[Route('/challenges/{id}/unpublish', name: 'app_admin_challenge_unpublish', methods: ['POST'])]
+    public function unpublishChallenge(Challenge $challenge, EntityManagerInterface $em): Response
+    {
+        // Repasse le défi en "en_attente"
+        $challenge->setPublicationStatus('en_attente');
+        $em->flush();
+
+        $this->addFlash('success', "Le défi \"{$challenge->getTitle()}\" a été dépublié.");
+
+        return $this->redirectToRoute('app_admin_challenges_all');
+    }
 }

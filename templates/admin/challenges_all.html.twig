@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les Défis{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">Gestion de Tous les Défis</h1>
+
+    <div class="mb-3">
+        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">
+            ← Retour au tableau de bord
+        </a>
+        <a href="{{ path('app_admin_challenges') }}" class="btn btn-warning">
+            📋 Défis en attente uniquement
+        </a>
+    </div>
+
+    {# Statistiques rapides #}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="alert alert-info">
+                <strong>Total :</strong> {{ challenges|length }} défis
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-warning">
+                <strong>En attente :</strong> {{ challenges|filter(c => c.publicationStatus == 'en_attente')|length }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-success">
+                <strong>Publiés :</strong> {{ challenges|filter(c => c.publicationStatus == 'publié')|length }}
+            </div>
+        </div>
+    </div>
+
+    {% if challenges is empty %}
+        <div class="alert alert-info">
+            Aucun défi dans la base de données.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Auteur</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Feedbacks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for challenge in challenges %}
+                        <tr>
+                            <td>{{ challenge.id }}</td>
+                            <td>
+                                {{ challenge.title }}
+                            </td>
+                            <td>
+                                {{ challenge.description|length > 80 ? challenge.description|slice(0, 80) ~ '...' : challenge.description }}
+                            </td>
+                            <td>{{ challenge.proposer.email }}</td>
+                            <td>{{ challenge.creationDate|date('d/m/Y') }}</td>
+                            <td>
+                                {% if challenge.publicationStatus == 'publié' %}
+                                    <span class="badge bg-success">Publié</span>
+                                {% elseif challenge.publicationStatus == 'en_attente' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ challenge.publicationStatus }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ challenge.feedbacks|length }}</span>
+                            </td>
+                            <td>
+                                {# Si en attente → Publier #}
+                                {% if challenge.publicationStatus == 'en_attente' %}
+                                    <form method="post" action="{{ path('app_admin_challenge_publish', {id: challenge.id}) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-success" 
+                                                onclick="return confirm('Publier ce défi ?')">
+                                            ✓ Publier
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                {# Si publié → Dépublier #}
+                                {% if challenge.publicationStatus == 'publié' %}
+                                    <form method="post" action="{{ path('app_admin_challenge_unpublish', {id: challenge.id}) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-warning" 
+                                                onclick="return confirm('Dépublier ce défi ?')">
+                                            ↓ Dépublier
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                {# Supprimer (toujours disponible) #}
+                                <form method="post" action="{{ path('app_admin_challenge_delete', {id: challenge.id}) }}" style="display: inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ challenge.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('⚠️ Supprimer ce défi ET tous ses feedbacks ?')">
+                                        ✗ Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

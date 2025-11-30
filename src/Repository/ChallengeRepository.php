@@ -14,11 +14,17 @@ class ChallengeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère un défi aléatoire
+     * Récupère un défi aléatoire parmi les défis publiés uniquement
      */
     public function findRandomChallenge(): ?Challenge
     {
-        $count = $this->count([]);
+        // Compte seulement les défis avec le statut "publié"
+        $count = $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.publicationStatus = :status')
+            ->setParameter('status', 'publié')
+            ->getQuery()
+            ->getSingleScalarResult();
         
         if ($count === 0) {
             return null;
@@ -26,7 +32,10 @@ class ChallengeRepository extends ServiceEntityRepository
         
         $offset = rand(0, $count - 1);
         
+        // Récupère un défi aléatoire parmi les publiés
         return $this->createQueryBuilder('c')
+            ->where('c.publicationStatus = :status')
+            ->setParameter('status', 'publié')
             ->setMaxResults(1)
             ->setFirstResult($offset)
             ->getQuery()

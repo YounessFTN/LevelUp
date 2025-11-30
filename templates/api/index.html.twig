@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Documentation API{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1>📚 Documentation API</h1>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>GET /api/challenge/random</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Description :</strong> Récupère un défi de bienveillance aléatoire.</p>
+            
+            <p><strong>Authentification :</strong> Non requise</p>
+            
+            <p><strong>Exemple de réponse :</strong></p>
+            <pre><code>{
+  "id": 3,
+  "titre": "Sourire à 5 inconnus",
+  "description": "Aujourd'hui, faites un sourire sincère à 5 personnes que vous ne connaissez pas."
+}</code></pre>
+            
+            <p><strong>Test :</strong></p>
+            <a href="{{ url('api_challenge_random') }}" class="btn btn-primary" target="_blank">
+                Tester l'API →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@ class Feedback
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $created_at = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
@@ -29,7 +29,7 @@ class Feedback
     private ?string $content = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $is_helpful = null;
+    private ?bool $isHelpful = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'feedbacks')]
     #[ORM\JoinColumn(nullable: false)]
@@ -41,7 +41,7 @@ class Feedback
 
     public function __construct()
     {
-        $this->created_at = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -51,12 +51,12 @@ class Feedback
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -75,12 +75,12 @@ class Feedback
 
     public function isHelpful(): ?bool
     {
-        return $this->is_helpful;
+        return $this->isHelpful;
     }
 
-    public function setIsHelpful(?bool $is_helpful): static
+    public function setIsHelpful(?bool $isHelpful): static
     {
-        $this->is_helpful = $is_helpful;
+        $this->isHelpful = $isHelpful;
 
         return $this;
     }

@@ -35,15 +35,17 @@ class Challenge
     )]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $creation_date = null;
+    // ✅ CORRECTION : Renommer en camelCase
+    #[ORM\Column(name: 'creation_date', type: Types::DATE_MUTABLE)]
+    private ?\DateTime $creationDate = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $publication_status = null;
+    // ✅ CORRECTION : Renommer en camelCase
+    #[ORM\Column(name: 'publication_status', length: 255)]
+    private ?string $publicationStatus = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?user $proposer = null;
+    private ?User $proposer = null;
 
     /**
      * @var Collection<int, User>
@@ -52,15 +54,15 @@ class Challenge
     private Collection $moderators;
 
     /**
-     * @var Collection<int, Quote>
+     * @var Collection<int, Feedback>
      */
-    #[ORM\ManyToMany(targetEntity: Quote::class)]
-    private Collection $quotes;
+    #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'challenge', orphanRemoval: true)]
+    private Collection $feedbacks;
 
     public function __construct()
     {
         $this->moderators = new ArrayCollection();
-        $this->quotes = new ArrayCollection();
+        $this->feedbacks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -76,7 +78,6 @@ class Challenge
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -85,46 +86,44 @@ class Challenge
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
+    // ✅ CORRECTION : Renommer les méthodes en camelCase
     public function getCreationDate(): ?\DateTime
     {
-        return $this->creation_date;
+        return $this->creationDate;
     }
 
-    public function setCreationDate(\DateTime $creation_date): static
+    public function setCreationDate(\DateTime $creationDate): static
     {
-        $this->creation_date = $creation_date;
-
+        $this->creationDate = $creationDate;
         return $this;
     }
 
+    // ✅ CORRECTION : Renommer les méthodes en camelCase
     public function getPublicationStatus(): ?string
     {
-        return $this->publication_status;
+        return $this->publicationStatus;
     }
 
-    public function setPublicationStatus(string $publication_status): static
+    public function setPublicationStatus(string $publicationStatus): static
     {
-        $this->publication_status = $publication_status;
-
+        $this->publicationStatus = $publicationStatus;
         return $this;
     }
 
-    public function getProposer(): ?user
+    public function getProposer(): ?User
     {
         return $this->proposer;
     }
 
-    public function setProposer(?user $proposer): static
+    public function setProposer(?User $proposer): static
     {
         $this->proposer = $proposer;
-
         return $this;
     }
 
@@ -141,38 +140,39 @@ class Challenge
         if (!$this->moderators->contains($moderator)) {
             $this->moderators->add($moderator);
         }
-
         return $this;
     }
 
     public function removeModerator(User $moderator): static
     {
         $this->moderators->removeElement($moderator);
-
         return $this;
     }
 
     /**
-     * @return Collection<int, Quote>
+     * @return Collection<int, Feedback>
      */
-    public function getQuotes(): Collection
+    public function getFeedbacks(): Collection
     {
-        return $this->quotes;
+        return $this->feedbacks;
     }
 
-    public function addQuote(Quote $quote): static
+    public function addFeedback(Feedback $feedback): static
     {
-        if (!$this->quotes->contains($quote)) {
-            $this->quotes->add($quote);
+        if (!$this->feedbacks->contains($feedback)) {
+            $this->feedbacks->add($feedback);
+            $feedback->setChallenge($this);
         }
-
         return $this;
     }
 
-    public function removeQuote(Quote $quote): static
+    public function removeFeedback(Feedback $feedback): static
     {
-        $this->quotes->removeElement($quote);
-
+        if ($this->feedbacks->removeElement($feedback)) {
+            if ($feedback->getChallenge() === $this) {
+                $feedback->setChallenge(null);
+            }
+        }
         return $this;
     }
 }

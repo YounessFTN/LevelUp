@@ -25,19 +25,36 @@ class ChallengeController extends AbstractController
         $form = $this->createForm(ChallengeType::class, $challenge);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Lier l'utilisateur connecté
-            $challenge->setAuthor($this->getUser());
+        if ($form->isSubmitted()) {
+            // Debug: afficher les erreurs si le formulaire n'est pas valide
+            if (!$form->isValid()) {
+                foreach ($form->getErrors(true) as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+            }
             
-            // Forcer le statut non-publié (en attente de modération)
-            $challenge->setIsPublished(false);
-            
-            $em->persist($challenge);
-            $em->flush();
-
-            $this->addFlash('success', 'Défi proposé ! Il sera publié après modération.');
-
-            return $this->redirectToRoute('app_home');
+            if ($form->isValid()) {
+                $user = $this->getUser();
+                
+                if (!$user) {
+                    throw $this->createAccessDeniedException('Vous devez être connecté');
+                }
+                
+                $challenge->setProposer($user);
+                $challenge->setPublicationStatus('en_attente');
+                $challenge->setCreationDate(new \DateTime());
+                
+                try {
+                    $em->persist($challenge);
+                    $em->flush();
+                    
+                    $this->addFlash('success', 'Défi proposé ! Il sera publié après modération.');
+                    return $this->redirectToRoute('app_home');
+                    
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de la création : ' . $e->getMessage());
+                }
+            }
         }
 
         return $this->render('challenge/new.html.twig', [

@@ -32,6 +32,7 @@ class ChallengeType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Challenge::class,
+            'csrf_protection' => false,
         ]);
     }
 }

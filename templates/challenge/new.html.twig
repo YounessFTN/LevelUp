@@ -8,6 +8,13 @@
         <div class="col-md-8">
             <h1 class="mb-4">Proposer un Nouveau Défi</h1>
 
+            {# Afficher les erreurs globales du formulaire #}
+            {% if form.vars.errors|length > 0 %}
+                <div class="alert alert-danger">
+                    {{ form_errors(form) }}
+                </div>
+            {% endif %}
+
             <div class="card">
                 <div class="card-body">
                     {{ form_start(form) }}

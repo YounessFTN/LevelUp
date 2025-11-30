@@ -11,6 +11,12 @@
                 <div class="card-body">
                     <h1 class="card-title text-primary">{{ challenge.title }}</h1>
                     <p class="card-text mt-3">{{ challenge.description }}</p>
+                    <p class="text-muted">
+                        <small>
+                            Proposé par {{ challenge.proposer.username }} 
+                            le {{ challenge.creationDate|date('d/m/Y') }}
+                        </small>
+                    </p>
                 </div>
             </div>
 

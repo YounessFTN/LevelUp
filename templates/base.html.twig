@@ -23,6 +23,11 @@
                     {% if app.user %}
                         {# Utilisateur connecté #}
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_my_space') }}">
+                                👤 Mon Espace
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_challenge_new') }}">
                                 Proposer un défi
                             </a>
@@ -38,15 +43,10 @@
                                     🛡️ Admin
                                 </a>
                             </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Mon Espace</a>
-                            </li>
                         {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
                         </li>
-
                     {% else %}
                         {# Visiteur non connecté #}
                         <li class="nav-item">
@@ -60,6 +60,15 @@
             </div>
         </div>
     </nav>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show m-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
 
     {% block body %}{% endblock %}
 

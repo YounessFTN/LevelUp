@@ -22,6 +22,13 @@
                     
                     {% if app.user %}
                         {# Utilisateur connecté #}
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_admin_dashboard') }}">
+                                        🛡️ Admin
+                                    </a>
+                                </li>
+                            {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_challenge_new') }}">
                                 Proposer un défi

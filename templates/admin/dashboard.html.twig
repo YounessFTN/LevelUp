@@ -96,4 +96,33 @@
         </div>
     </div>
 </div>
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Défis</h5>
+                <p class="card-text display-4">{{ total_challenges }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">En Attente</h5>
+                <p class="card-text display-4">{{ pending_challenges }}</p>
+                <a href="{{ path('app_admin_challenges') }}" class="btn btn-light btn-sm">
+                    Modérer
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Publiés</h5>
+                <p class="card-text display-4">{{ published_challenges }}</p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

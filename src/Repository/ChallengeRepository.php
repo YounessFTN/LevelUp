@@ -6,9 +6,6 @@ use App\Entity\Challenge;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Challenge>
- */
 class ChallengeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,23 @@ class ChallengeRepository extends ServiceEntityRepository
         parent::__construct($registry, Challenge::class);
     }
 
-    //    /**
-    //     * @return Challenge[] Returns an array of Challenge objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Challenge
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Récupère un défi aléatoire
+     */
+    public function findRandomChallenge(): ?Challenge
+    {
+        $count = $this->count([]);
+        
+        if ($count === 0) {
+            return null;
+        }
+        
+        $offset = rand(0, $count - 1);
+        
+        return $this->createQueryBuilder('c')
+            ->setMaxResults(1)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Défi Bienveillance{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Défi de Bienveillance du Jour</h1>
+            
+            {% if challenge is not null %}
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h2 class="card-title text-primary">{{ challenge.title }}</h2>
+                        <p class="card-text mt-3">{{ challenge.description }}</p>
+                    </div>
+                    <div class="card-footer text-muted text-center">
+                        Rafraîchissez la page pour un nouveau défi !
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    <h4 class="alert-heading">Aucun défi pour le moment</h4>
+                    <p>Les défis de bienveillance arrivent bientôt !</p>
+                </div>
+            {% endif %}
+            
+            {% if not app.user %}
+                <div class="text-center mt-4">
+                    <p>
+                        <a href="{{ path('app_login') }}" class="btn btn-primary">Connectez-vous</a> 
+                        pour proposer vos propres défis et partager vos expériences !
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

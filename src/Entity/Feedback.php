@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\FeedbackRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FeedbackRepository::class)]
 #[ORM\Table(name: 'feedback')]
@@ -16,36 +17,46 @@ class Feedback
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?\DateTime $created_at = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
+    #[Assert\Length(
+        min: 10,
+        minMessage: 'Votre retour doit contenir au moins {{ limit }} caractères'
+    )]
     private ?string $content = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $is_helpful = null;
+    private ?bool $isHelpful = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'feedbacks')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Challenge::class, inversedBy: 'feedbacks')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Challenge $challenge = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $created_at): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -55,7 +66,7 @@ class Feedback
         return $this->content;
     }
 
-    public function setContent(?string $content): static
+    public function setContent(string $content): static
     {
         $this->content = $content;
 
@@ -64,12 +75,12 @@ class Feedback
 
     public function isHelpful(): ?bool
     {
-        return $this->is_helpful;
+        return $this->isHelpful;
     }
 
-    public function setIsHelpful(?bool $is_helpful): static
+    public function setIsHelpful(?bool $isHelpful): static
     {
-        $this->is_helpful = $is_helpful;
+        $this->isHelpful = $isHelpful;
 
         return $this;
     }

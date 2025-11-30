@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Challenge;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,5 +41,21 @@ class ChallengeRepository extends ServiceEntityRepository
             ->setFirstResult($offset)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * Trouve les défis où l'utilisateur a posté au moins un feedback
+     * Utilise DISTINCT pour éviter les doublons si plusieurs feedbacks sur le même défi
+     */
+    public function findChallengesCommentedBy(User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.feedbacks', 'f')
+            ->where('f.author = :user')
+            ->setParameter('user', $user)
+            ->distinct()
+            ->orderBy('c.creationDate', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

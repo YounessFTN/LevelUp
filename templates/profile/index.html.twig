@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Espace{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">👤 Mon Espace</h1>
+    
+    <div class="alert alert-info">
+        Bienvenue <strong>{{ app.user.username }}</strong> ! Voici un récapitulatif de votre activité.
+    </div>
+
+    <div class="row">
+        {# Colonne 1 : Mes Défis Proposés #}
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📝 Mes Défis Proposés ({{ my_challenges|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if my_challenges is empty %}
+                        <p class="text-muted">Vous n'avez pas encore proposé de défi.</p>
+                        <a href="{{ path('app_challenge_new') }}" class="btn btn-primary btn-sm">
+                            ➕ Proposer mon premier défi
+                        </a>
+                    {% else %}
+                        <div class="list-group">
+                            {% for challenge in my_challenges %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <a href="{{ path('app_challenge_show', {id: challenge.id}) }}">
+                                                    {{ challenge.title }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                {{ challenge.creationDate|date('d/m/Y') }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            {% if challenge.publicationStatus == 'publié' %}
+                                                <span class="badge bg-success">✓ Publié</span>
+                                            {% elseif challenge.publicationStatus == 'en_attente' %}
+                                                <span class="badge bg-warning text-dark">⏳ En attente</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ challenge.publicationStatus }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        💬 {{ challenge.feedbacks|length }} retour{{ challenge.feedbacks|length > 1 ? 's' : '' }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Colonne 2 : Défis où j'ai Participé #}
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">💬 Défis où j'ai Participé ({{ commented_challenges|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if commented_challenges is empty %}
+                        <p class="text-muted">Vous n'avez pas encore partagé de retour d'expérience.</p>
+                        <a href="{{ path('app_home') }}" class="btn btn-success btn-sm">
+                            🏠 Découvrir les défis
+                        </a>
+                    {% else %}
+                        <div class="list-group">
+                            {% for challenge in commented_challenges %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">
+                                        <a href="{{ path('app_challenge_show', {id: challenge.id}) }}">
+                                            {{ challenge.title }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        Proposé par {{ challenge.proposer.username }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Statistiques Rapides #}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ my_challenges|length }}</h3>
+                    <p class="mb-0">Défis proposés</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h3 class="text-success">{{ commented_challenges|length }}</h3>
+                    <p class="mb-0">Participations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h3 class="text-info">
+                        {% set total_feedbacks = 0 %}
+                        {% for challenge in my_challenges %}
+                            {% set total_feedbacks = total_feedbacks + challenge.feedbacks|length %}
+                        {% endfor %}
+                        {{ total_feedbacks }}
+                    </h3>
+                    <p class="mb-0">Retours reçus</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Actions Rapides #}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Actions Rapides</h5>
+            <div class="btn-group" role="group">
+                <a href="{{ path('app_home') }}" class="btn btn-outline-primary">
+                    🏠 Accueil
+                </a>
+                <a href="{{ path('app_challenge_new') }}" class="btn btn-outline-success">
+                    ➕ Proposer un défi
+                </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-danger">
+                        🛡️ Administration
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
